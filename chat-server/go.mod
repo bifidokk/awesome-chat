@@ -1,4 +1,4 @@
-module awesome-chat
+module github.com/bifidokk/awesome-chat/chat-server
 
 go 1.22
 
@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit v3.18.0+incompatible // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	golang.org/x/net v0.22.0 // indirect
