@@ -54,8 +54,8 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 		Name:      gofakeit.Name(),
 		Email:     gofakeit.Email(),
 		Role:      desc.Role_ROLE_USER,
-		CreatedAt: timestamppb.Now(),
-		UpdatedAt: timestamppb.Now(),
+		CreatedAt: timestamppb.New(gofakeit.Date()),
+		UpdatedAt: timestamppb.New(gofakeit.Date()),
 	}, nil
 }
 
