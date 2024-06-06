@@ -14,6 +14,9 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
         uses: actions/checkout@v4
-      - run: go mod download
+      - name: Go mod
+        working-directory: ./cmd
+        run: go mod download
       - name: Build
+        working-directory: ./cmd
         run: go build ./auth/cmd/main.go
