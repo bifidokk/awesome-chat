@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/pkg/errors"
 	"net"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -16,6 +17,7 @@ type grpcConfig struct {
 	port string
 }
 
+// NewGRPCConfig creates a new GRPC configuration instance
 func NewGRPCConfig() (GRPCConfig, error) {
 	host := os.Getenv(grpcHostEnvName)
 	if len(host) == 0 {

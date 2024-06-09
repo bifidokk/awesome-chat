@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	"log"
 	"net"
 
+	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"github.com/brianvoe/gofakeit"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -60,7 +60,7 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{})
+	desc.RegisterAuthV1Server(s, &server{pool: pool})
 
 	log.Printf("Server listening at %v", listener.Addr())
 

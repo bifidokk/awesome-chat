@@ -13,6 +13,7 @@ type pgConfig struct {
 	dsn string
 }
 
+// NewPGConfig creates a new PG configuration instance
 func NewPGConfig() (PGConfig, error) {
 	dsn := os.Getenv(dsnEnvName)
 	if len(dsn) == 0 {
