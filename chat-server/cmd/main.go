@@ -4,11 +4,12 @@ import (
 	"context"
 	"flag"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/config"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/repository"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/repository/chat"
 	"log"
 	"net"
 
 	desc "github.com/bifidokk/awesome-chat/chat-server/pkg/chat_v1"
-	"github.com/brianvoe/gofakeit"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -19,7 +20,7 @@ var configPath string
 
 type server struct {
 	desc.UnimplementedChatV1Server
-	pool *pgxpool.Pool
+	chatRepository repository.ChatRepository
 }
 
 func init() {
@@ -59,7 +60,9 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterChatV1Server(s, &server{pool: pool})
+
+	chatRepository := chat.NewRepository(pool)
+	desc.RegisterChatV1Server(s, &server{chatRepository: chatRepository})
 
 	log.Printf("Server listening at %v", listener.Addr())
 
@@ -71,8 +74,13 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create a new chat: %v", req)
 
+	chatId, err := s.chatRepository.Create(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
 	return &desc.CreateResponse{
-		Id: gofakeit.Int64(),
+		Id: chatId,
 	}, nil
 }
 
@@ -84,6 +92,11 @@ func (s *server) SendMessage(ctx context.Context, req *desc.SendMessageRequest) 
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
 	log.Printf("Delete chat: %v", req)
+
+	err := s.chatRepository.Delete(ctx, req.GetId())
+	if err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
