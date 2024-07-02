@@ -3,24 +3,24 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/bifidokk/awesome-chat/auth/internal/repository"
+	"github.com/bifidokk/awesome-chat/auth/internal/repository/user"
 	"log"
 	"net"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
-	"github.com/brianvoe/gofakeit"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var configPath string
 
 type server struct {
 	desc.UnimplementedAuthV1Server
-	pool *pgxpool.Pool
+	userRepository repository.UserRepository
 }
 
 func init() {
@@ -60,7 +60,9 @@ func main() {
 
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{pool: pool})
+
+	userRepository := user.NewRepository(pool)
+	desc.RegisterAuthV1Server(s, &server{userRepository: userRepository})
 
 	log.Printf("Server listening at %v", listener.Addr())
 
@@ -72,32 +74,47 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create a new user: %v", req)
 
+	userId, err := s.userRepository.Create(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
 	return &desc.CreateResponse{
-		Id: gofakeit.Int64(),
+		Id: userId,
 	}, nil
 }
 
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
 	log.Printf("Get user: %v", req)
 
-	return &desc.GetResponse{
-		Id:        gofakeit.Int64(),
-		Name:      gofakeit.Name(),
-		Email:     gofakeit.Email(),
-		Role:      desc.Role_ROLE_USER,
-		CreatedAt: timestamppb.New(gofakeit.Date()),
-		UpdatedAt: timestamppb.New(gofakeit.Date()),
-	}, nil
+	resp, err := s.userRepository.Get(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
 	log.Printf("Update user: %v", req)
+
+	err := s.userRepository.Update(ctx, req)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
 	log.Printf("Delete user: %v", req)
+
+	err := s.userRepository.Delete(ctx, req.Id)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
