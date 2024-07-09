@@ -6,6 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// ToCreateUserFromCreateRequest converts a CreateRequest from the gRPC layer to a CreateUser model for the business logic layer.
 func ToCreateUserFromCreateRequest(req *desc.CreateRequest) *model.CreateUser {
 	return &model.CreateUser{
 		Email:           req.Email,
@@ -16,6 +17,7 @@ func ToCreateUserFromCreateRequest(req *desc.CreateRequest) *model.CreateUser {
 	}
 }
 
+// ToGetUserResponseFromUser converts a User model from the business logic layer to a GetResponse for the gRPC layer.
 func ToGetUserResponseFromUser(user *model.User) *desc.GetResponse {
 	var createdAt *timestamppb.Timestamp
 	var updatedAt *timestamppb.Timestamp
@@ -36,6 +38,7 @@ func ToGetUserResponseFromUser(user *model.User) *desc.GetResponse {
 	}
 }
 
+// ToUpdateUserFromUpdateRequest converts an UpdateRequest from the gRPC layer to an UpdateUser model for the business logic layer.
 func ToUpdateUserFromUpdateRequest(req *desc.UpdateRequest) *model.UpdateUser {
 	var name string
 	var email string

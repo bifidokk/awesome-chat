@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	"github.com/bifidokk/awesome-chat/auth/internal/model"
 )
 

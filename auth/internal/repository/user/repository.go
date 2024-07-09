@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/bifidokk/awesome-chat/auth/internal/model"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
@@ -26,6 +27,7 @@ type repo struct {
 	db *pgxpool.Pool
 }
 
+// NewRepository creates a new instance of UserRepository.
 func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
@@ -42,13 +44,13 @@ func (r repo) Create(ctx context.Context, data *model.CreateUser) (int64, error)
 		return 0, err
 	}
 
-	var userId int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&userId)
+	var userID int64
+	err = r.db.QueryRow(ctx, query, args...).Scan(&userID)
 	if err != nil {
 		return 0, err
 	}
 
-	return userId, nil
+	return userID, nil
 }
 
 func (r repo) Delete(ctx context.Context, id int64) error {

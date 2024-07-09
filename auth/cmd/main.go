@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/bifidokk/awesome-chat/auth/internal/converter"
-	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
-	"github.com/bifidokk/awesome-chat/auth/internal/service"
-	userService "github.com/bifidokk/awesome-chat/auth/internal/service/user"
 	"log"
 	"net"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
+	"github.com/bifidokk/awesome-chat/auth/internal/converter"
+	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
+	"github.com/bifidokk/awesome-chat/auth/internal/service"
+	userService "github.com/bifidokk/awesome-chat/auth/internal/service/user"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
@@ -77,13 +77,13 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create a new user: %v", req)
 
-	userId, err := s.userService.Create(ctx, converter.ToCreateUserFromCreateRequest(req))
+	userID, err := s.userService.Create(ctx, converter.ToCreateUserFromCreateRequest(req))
 	if err != nil {
 		return nil, err
 	}
 
 	return &desc.CreateResponse{
-		Id: userId,
+		Id: userID,
 	}, nil
 }
 

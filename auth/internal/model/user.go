@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// User represents a user in the business logic layer.
 type User struct {
 	ID        int64
 	Name      string
@@ -14,6 +15,7 @@ type User struct {
 	UpdatedAt sql.NullTime
 }
 
+// CreateUser represents the data needed to create a new user.
 type CreateUser struct {
 	Name            string
 	Email           string
@@ -22,6 +24,7 @@ type CreateUser struct {
 	ConfirmPassword string
 }
 
+// UpdateUser represents the data needed to update an existing user.
 type UpdateUser struct {
 	ID    int64
 	Name  string

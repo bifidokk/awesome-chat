@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// User represents a user record in the data store.
 type User struct {
 	ID        int64
 	Name      string

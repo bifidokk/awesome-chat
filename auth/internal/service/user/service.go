@@ -9,6 +9,7 @@ type serv struct {
 	userRepository repository.UserRepository
 }
 
+// NewUserService creates a new instance of UserService.
 func NewUserService(userRepository repository.UserRepository) service.UserService {
 	return &serv{userRepository}
 }
