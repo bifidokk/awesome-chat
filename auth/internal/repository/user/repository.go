@@ -3,10 +3,10 @@ package user
 import (
 	"context"
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bifidokk/awesome-chat/auth/internal/model"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository/user/converter"
 	modelRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user/model"
-	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -30,7 +30,7 @@ func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
 
-func (r repo) Create(ctx context.Context, data *desc.CreateRequest) (int64, error) {
+func (r repo) Create(ctx context.Context, data *model.CreateUser) (int64, error) {
 	builder := sq.Insert(tableName).
 		Columns(nameColumn, emailColumn, passwordColumn, roleColumn).
 		Values(data.Name, data.Email, data.Password, data.Role).
@@ -66,10 +66,10 @@ func (r repo) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (r repo) Update(ctx context.Context, data *desc.UpdateRequest) error {
+func (r repo) Update(ctx context.Context, data *model.UpdateUser) error {
 	builder := sq.Update(tableName).
-		SetMap(sq.Eq{nameColumn: data.Name.Value, emailColumn: data.Email.Value}).
-		Where(sq.Eq{idColumn: data.Id}).
+		SetMap(sq.Eq{nameColumn: data.Name, emailColumn: data.Email}).
+		Where(sq.Eq{idColumn: data.ID}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := builder.ToSql()
@@ -82,7 +82,7 @@ func (r repo) Update(ctx context.Context, data *desc.UpdateRequest) error {
 	return err
 }
 
-func (r repo) Get(ctx context.Context, id int64) (*desc.GetResponse, error) {
+func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 	builder := sq.Select(idColumn, nameColumn, emailColumn, roleColumn, createdAtColumn, updatedAtColumn).
 		From(tableName).
 		Where(sq.Eq{idColumn: id}).

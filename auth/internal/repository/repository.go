@@ -2,12 +2,12 @@ package repository
 
 import (
 	"context"
-	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
+	"github.com/bifidokk/awesome-chat/auth/internal/model"
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, data *desc.CreateRequest) (int64, error)
+	Create(ctx context.Context, data *model.CreateUser) (int64, error)
 	Delete(ctx context.Context, id int64) error
-	Update(ctx context.Context, data *desc.UpdateRequest) error
-	Get(ctx context.Context, id int64) (*desc.GetResponse, error)
+	Update(ctx context.Context, data *model.UpdateUser) error
+	Get(ctx context.Context, id int64) (*model.User, error)
 }

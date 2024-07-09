@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/bifidokk/awesome-chat/auth/internal/repository"
-	"github.com/bifidokk/awesome-chat/auth/internal/repository/user"
+	"github.com/bifidokk/awesome-chat/auth/internal/converter"
+	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
+	"github.com/bifidokk/awesome-chat/auth/internal/service"
+	userService "github.com/bifidokk/awesome-chat/auth/internal/service/user"
 	"log"
 	"net"
 
@@ -20,7 +22,7 @@ var configPath string
 
 type server struct {
 	desc.UnimplementedAuthV1Server
-	userRepository repository.UserRepository
+	userService service.UserService
 }
 
 func init() {
@@ -61,8 +63,9 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	userRepository := user.NewRepository(pool)
-	desc.RegisterAuthV1Server(s, &server{userRepository: userRepository})
+	userRepo := userRepository.NewRepository(pool)
+	userServ := userService.NewUserService(userRepo)
+	desc.RegisterAuthV1Server(s, &server{userService: userServ})
 
 	log.Printf("Server listening at %v", listener.Addr())
 
@@ -74,7 +77,7 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create a new user: %v", req)
 
-	userId, err := s.userRepository.Create(ctx, req)
+	userId, err := s.userService.Create(ctx, converter.ToCreateUserFromCreateRequest(req))
 	if err != nil {
 		return nil, err
 	}
@@ -87,18 +90,18 @@ func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.Cre
 func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
 	log.Printf("Get user: %v", req)
 
-	resp, err := s.userRepository.Get(ctx, req.Id)
+	user, err := s.userService.Get(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return converter.ToGetUserResponseFromUser(user), nil
 }
 
 func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
 	log.Printf("Update user: %v", req)
 
-	err := s.userRepository.Update(ctx, req)
+	err := s.userService.Update(ctx, converter.ToUpdateUserFromUpdateRequest(req))
 
 	if err != nil {
 		return nil, err
@@ -110,7 +113,7 @@ func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
 	log.Printf("Delete user: %v", req)
 
-	err := s.userRepository.Delete(ctx, req.Id)
+	err := s.userService.Delete(ctx, req.Id)
 
 	if err != nil {
 		return nil, err
