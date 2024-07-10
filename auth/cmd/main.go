@@ -6,24 +6,17 @@ import (
 	"log"
 	"net"
 
+	userApi "github.com/bifidokk/awesome-chat/auth/internal/api/user"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
-	"github.com/bifidokk/awesome-chat/auth/internal/converter"
 	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
-	"github.com/bifidokk/awesome-chat/auth/internal/service"
 	userService "github.com/bifidokk/awesome-chat/auth/internal/service/user"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var configPath string
-
-type server struct {
-	desc.UnimplementedAuthV1Server
-	userService service.UserService
-}
 
 func init() {
 	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
@@ -65,59 +58,11 @@ func main() {
 
 	userRepo := userRepository.NewRepository(pool)
 	userServ := userService.NewUserService(userRepo)
-	desc.RegisterAuthV1Server(s, &server{userService: userServ})
+	desc.RegisterAuthV1Server(s, userApi.NewUserAPI(userServ))
 
 	log.Printf("Server listening at %v", listener.Addr())
 
 	if err = s.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
-}
-
-func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	log.Printf("Create a new user: %v", req)
-
-	userID, err := s.userService.Create(ctx, converter.ToCreateUserFromCreateRequest(req))
-	if err != nil {
-		return nil, err
-	}
-
-	return &desc.CreateResponse{
-		Id: userID,
-	}, nil
-}
-
-func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetResponse, error) {
-	log.Printf("Get user: %v", req)
-
-	user, err := s.userService.Get(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	return converter.ToGetUserResponseFromUser(user), nil
-}
-
-func (s *server) Update(ctx context.Context, req *desc.UpdateRequest) (*emptypb.Empty, error) {
-	log.Printf("Update user: %v", req)
-
-	err := s.userService.Update(ctx, converter.ToUpdateUserFromUpdateRequest(req))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
-}
-
-func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
-	log.Printf("Delete user: %v", req)
-
-	err := s.userService.Delete(ctx, req.Id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
 }
