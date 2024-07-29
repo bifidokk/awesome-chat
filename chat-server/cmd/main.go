@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/bifidokk/awesome-chat/chat-server/internal/config"
-	"github.com/bifidokk/awesome-chat/chat-server/internal/repository"
-	"github.com/bifidokk/awesome-chat/chat-server/internal/repository/chat"
 	"log"
 	"net"
 
+	"github.com/bifidokk/awesome-chat/chat-server/internal/config"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/converter"
+	chatRepository "github.com/bifidokk/awesome-chat/chat-server/internal/repository/chat"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/service"
+	chatService "github.com/bifidokk/awesome-chat/chat-server/internal/service/chat"
 	desc "github.com/bifidokk/awesome-chat/chat-server/pkg/chat_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
@@ -20,7 +22,7 @@ var configPath string
 
 type server struct {
 	desc.UnimplementedChatV1Server
-	chatRepository repository.ChatRepository
+	chatService service.ChatService
 }
 
 func init() {
@@ -61,8 +63,9 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	chatRepository := chat.NewRepository(pool)
-	desc.RegisterChatV1Server(s, &server{chatRepository: chatRepository})
+	chatRepo := chatRepository.NewRepository(pool)
+	chatServ := chatService.NewChatService(chatRepo)
+	desc.RegisterChatV1Server(s, &server{chatService: chatServ})
 
 	log.Printf("Server listening at %v", listener.Addr())
 
@@ -74,26 +77,28 @@ func main() {
 func (s *server) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
 	log.Printf("Create a new chat: %v", req)
 
-	chatId, err := s.chatRepository.Create(ctx, req)
+	chatID, err := s.chatService.Create(ctx, converter.ToCreateChatFromCreateRequest(req))
 	if err != nil {
 		return nil, err
 	}
 
 	return &desc.CreateResponse{
-		Id: chatId,
+		Id: chatID,
 	}, nil
 }
 
 func (s *server) SendMessage(ctx context.Context, req *desc.SendMessageRequest) (*emptypb.Empty, error) {
 	log.Printf("Send a message: %v", req)
 
-	return &emptypb.Empty{}, nil
+	err := s.chatService.SendMessage(ctx, 0, converter.ToSendMessageFromSendMessageRequest(req))
+
+	return &emptypb.Empty{}, err
 }
 
 func (s *server) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.Empty, error) {
 	log.Printf("Delete chat: %v", req)
 
-	err := s.chatRepository.Delete(ctx, req.GetId())
+	err := s.chatService.Delete(ctx, req.GetId())
 	if err != nil {
 		return nil, err
 	}

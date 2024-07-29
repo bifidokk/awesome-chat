@@ -3,9 +3,10 @@ package chat
 import (
 	"context"
 	"encoding/json"
+
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/model"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/repository"
-	desc "github.com/bifidokk/awesome-chat/chat-server/pkg/chat_v1"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -22,19 +23,20 @@ type repo struct {
 	db *pgxpool.Pool
 }
 
+// NewRepository creates a new instance of ChatRepository.
 func NewRepository(db *pgxpool.Pool) repository.ChatRepository {
 	return &repo{db: db}
 }
 
-func (r repo) Create(ctx context.Context, data *desc.CreateRequest) (int64, error) {
-	usernamesJson, err := json.Marshal(data.Usernames)
+func (r repo) Create(ctx context.Context, data *model.CreateChat) (int64, error) {
+	usernamesJSON, err := json.Marshal(data.Usernames)
 	if err != nil {
 		return 0, err
 	}
 
 	builderInsert := sq.Insert(tableName).
 		Columns(usernamesColumn).
-		Values(usernamesJson).
+		Values(usernamesJSON).
 		Suffix("RETURNING id").
 		PlaceholderFormat(sq.Dollar)
 
@@ -43,13 +45,13 @@ func (r repo) Create(ctx context.Context, data *desc.CreateRequest) (int64, erro
 		return 0, err
 	}
 
-	var chatId int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&chatId)
+	var chatID int64
+	err = r.db.QueryRow(ctx, query, args...).Scan(&chatID)
 	if err != nil {
 		return 0, err
 	}
 
-	return chatId, nil
+	return chatID, nil
 }
 
 func (r repo) Delete(ctx context.Context, id int64) error {
