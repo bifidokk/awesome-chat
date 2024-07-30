@@ -14,9 +14,5 @@ func (api *API) Delete(ctx context.Context, req *desc.DeleteRequest) (*emptypb.E
 
 	err := api.userService.Delete(ctx, req.Id)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &emptypb.Empty{}, nil
+	return &emptypb.Empty{}, err
 }
