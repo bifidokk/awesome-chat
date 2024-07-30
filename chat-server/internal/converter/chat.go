@@ -15,7 +15,8 @@ func ToCreateChatFromCreateRequest(req *desc.CreateRequest) *model.CreateChat {
 // ToSendMessageFromSendMessageRequest converts a SendMessageRequest from the gRPC layer to a SendMessage model for the business logic layer.
 func ToSendMessageFromSendMessageRequest(req *desc.SendMessageRequest) *model.SendMessage {
 	return &model.SendMessage{
-		Text: req.Text,
-		From: req.From,
+		Text:   req.Text,
+		From:   req.From,
+		ChatID: req.ChatID,
 	}
 }

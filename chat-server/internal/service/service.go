@@ -10,5 +10,5 @@ import (
 type ChatService interface {
 	Create(ctx context.Context, data *model.CreateChat) (int64, error)
 	Delete(ctx context.Context, id int64) error
-	SendMessage(ctx context.Context, id int64, message *model.SendMessage) error
+	SendMessage(ctx context.Context, message *model.SendMessage) error
 }
