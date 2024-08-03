@@ -45,13 +45,13 @@ func (sp *serviceProvider) PgConfig() config.PGConfig {
 
 func (sp *serviceProvider) GrpcConfig() config.GRPCConfig {
 	if sp.grpcConfig == nil {
-		grpcCongig, err := config.NewGRPCConfig()
+		grpcConfig, err := config.NewGRPCConfig()
 
 		if err != nil {
 			log.Fatalf("failed to get grpc config: %v", err)
 		}
 
-		sp.grpcConfig = grpcCongig
+		sp.grpcConfig = grpcConfig
 	}
 
 	return sp.grpcConfig
