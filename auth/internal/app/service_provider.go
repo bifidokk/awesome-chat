@@ -30,6 +30,7 @@ type serviceProvider struct {
 func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
+
 func (sp *serviceProvider) PgConfig() config.PGConfig {
 	if sp.pgConfig == nil {
 		pgConfig, err := config.NewPGConfig()
