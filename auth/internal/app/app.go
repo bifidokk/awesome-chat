@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"google.golang.org/grpc"
@@ -32,6 +33,11 @@ func NewApp(ctx context.Context) (*App, error) {
 
 // Run starts the gRPC server for the application.
 func (a *App) Run() error {
+	defer func() {
+		closer.CloseAll()
+		closer.Wait()
+	}()
+
 	return a.runGRPCServer()
 }
 

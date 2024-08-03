@@ -6,6 +6,7 @@ import (
 
 	"github.com/bifidokk/awesome-chat/auth/internal/api/user"
 	userApi "github.com/bifidokk/awesome-chat/auth/internal/api/user"
+	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
 	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
@@ -64,6 +65,12 @@ func (sp *serviceProvider) PgPool(ctx context.Context) *pgxpool.Pool {
 		if err != nil {
 			log.Fatalf("failed to connect to database: %v", err)
 		}
+
+		closer.Add(
+			func() error {
+				pool.Close()
+				return nil
+			})
 
 		sp.pgPool = pool
 	}
