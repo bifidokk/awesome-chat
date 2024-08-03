@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	"github.com/bifidokk/awesome-chat/chat-server/internal/closer"
 	"log"
 	"net"
 
+	"github.com/bifidokk/awesome-chat/chat-server/internal/closer"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/config"
 	desc "github.com/bifidokk/awesome-chat/chat-server/pkg/chat_v1"
 	"google.golang.org/grpc"
