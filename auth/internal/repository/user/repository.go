@@ -2,13 +2,13 @@ package user
 
 import (
 	"context"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/bifidokk/awesome-chat/auth/internal/model"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository/user/converter"
 	modelRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user/model"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -24,11 +24,11 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository creates a new instance of UserRepository.
-func NewRepository(db *pgxpool.Pool) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
@@ -44,8 +44,13 @@ func (r repo) Create(ctx context.Context, data *model.CreateUser) (int64, error)
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Create",
+		QueryRaw: query,
+	}
+
 	var userID int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&userID)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&userID)
 	if err != nil {
 		return 0, err
 	}
@@ -63,7 +68,12 @@ func (r repo) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 
 	return err
 }
@@ -79,7 +89,12 @@ func (r repo) Update(ctx context.Context, data *model.UpdateUser) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Update",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 
 	return err
 }
@@ -97,10 +112,13 @@ func (r repo) Get(ctx context.Context, id int64) (*model.User, error) {
 		return nil, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
 	var user modelRepository.User
-	err = r.db.
-		QueryRow(ctx, query, args...).
-		Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 
 	if err != nil {
 		return nil, err
