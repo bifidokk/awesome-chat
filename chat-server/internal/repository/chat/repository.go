@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/client/db"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/model"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/repository"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 const (
@@ -20,11 +20,11 @@ const (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository creates a new instance of ChatRepository.
-func NewRepository(db *pgxpool.Pool) repository.ChatRepository {
+func NewRepository(db db.Client) repository.ChatRepository {
 	return &repo{db: db}
 }
 
@@ -45,8 +45,13 @@ func (r repo) Create(ctx context.Context, data *model.CreateChat) (int64, error)
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "chat_repository.Create",
+		QueryRaw: query,
+	}
+
 	var chatID int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&chatID)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&chatID)
 	if err != nil {
 		return 0, err
 	}
@@ -64,7 +69,12 @@ func (r repo) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "chat_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 
 	return err
 }

@@ -5,19 +5,23 @@ import (
 	"log"
 
 	"github.com/bifidokk/awesome-chat/chat-server/internal/api/chat"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/client/db"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/client/db/pg"
+	"github.com/bifidokk/awesome-chat/chat-server/internal/client/db/transaction"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/closer"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/config"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/repository"
 	chatRepository "github.com/bifidokk/awesome-chat/chat-server/internal/repository/chat"
 	"github.com/bifidokk/awesome-chat/chat-server/internal/service"
 	chatService "github.com/bifidokk/awesome-chat/chat-server/internal/service/chat"
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
-	pgPool     *pgxpool.Pool
+
+	dbClient  db.Client
+	txManager db.TxManager
 
 	chatRepository repository.ChatRepository
 
@@ -58,29 +62,41 @@ func (sp *serviceProvider) GrpcConfig() config.GRPCConfig {
 	return sp.grpcConfig
 }
 
-func (sp *serviceProvider) PgPool(ctx context.Context) *pgxpool.Pool {
-	if sp.pgPool == nil {
-		pool, err := pgxpool.Connect(ctx, sp.PgConfig().DSN())
+func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if sp.dbClient == nil {
+		client, err := pg.New(ctx, sp.PgConfig().DSN())
+
+		if err != nil {
+			log.Fatalf("failed to create DB client: %v", err)
+		}
+
+		err = client.DB().Ping(ctx)
 
 		if err != nil {
 			log.Fatalf("failed to connect to database: %v", err)
 		}
 
-		closer.Add(
-			func() error {
-				pool.Close()
-				return nil
-			})
+		closer.Add(client.Close)
 
-		sp.pgPool = pool
+		sp.dbClient = client
 	}
 
-	return sp.pgPool
+	return sp.dbClient
+}
+
+func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if sp.txManager == nil {
+		txManager := transaction.NewTransactionManager(sp.DBClient(ctx).DB())
+
+		sp.txManager = txManager
+	}
+
+	return sp.txManager
 }
 
 func (sp *serviceProvider) ChatRepository(ctx context.Context) repository.ChatRepository {
 	if sp.chatRepository == nil {
-		sp.chatRepository = chatRepository.NewRepository(sp.PgPool(ctx))
+		sp.chatRepository = chatRepository.NewRepository(sp.DBClient(ctx))
 	}
 
 	return sp.chatRepository
