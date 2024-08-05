@@ -6,11 +6,13 @@ import (
 	"strings"
 )
 
+// Placeholder constants used for SQL query parameter substitution.
 const (
 	PlaceholderDollar   = "$"
 	PlaceholderQuestion = "?"
 )
 
+// Pretty formats a SQL query string by replacing placeholders with actual argument values.
 func Pretty(query string, placeholder string, args ...any) string {
 	for i, param := range args {
 		var value string

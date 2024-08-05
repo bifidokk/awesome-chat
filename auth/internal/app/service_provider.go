@@ -2,13 +2,13 @@ package app
 
 import (
 	"context"
-	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
-	"github.com/bifidokk/awesome-chat/auth/internal/client/db/pg"
-	"github.com/bifidokk/awesome-chat/auth/internal/client/db/transaction"
 	"log"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/api/user"
 	userApi "github.com/bifidokk/awesome-chat/auth/internal/api/user"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db/pg"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db/transaction"
 	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"

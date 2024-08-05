@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
-	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
 	"github.com/bifidokk/awesome-chat/auth/internal/model"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository/user/converter"

@@ -3,10 +3,10 @@ package pg
 import (
 	"context"
 	"fmt"
-	"github.com/bifidokk/awesome-chat/auth/internal/client/db/prettier"
 	"log"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
+	"github.com/bifidokk/awesome-chat/auth/internal/client/db/prettier"
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
@@ -15,6 +15,7 @@ import (
 
 type key string
 
+// TxKey is a constant used as a key for transaction context values.
 const (
 	TxKey key = "tx"
 )
@@ -23,6 +24,7 @@ type pg struct {
 	connection *pgxpool.Pool
 }
 
+// NewDB creates a new db.DB instance with the provided connection pool.
 func NewDB(connection *pgxpool.Pool) db.DB {
 	return &pg{
 		connection: connection,
@@ -30,8 +32,6 @@ func NewDB(connection *pgxpool.Pool) db.DB {
 }
 
 func (p *pg) ScanOneContext(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) error {
-	logQuery(ctx, q, args...)
-
 	row, err := p.QueryContext(ctx, q, args...)
 	if err != nil {
 		return err
@@ -41,8 +41,6 @@ func (p *pg) ScanOneContext(ctx context.Context, dest interface{}, q db.Query, a
 }
 
 func (p *pg) ScanAllContext(ctx context.Context, dest interface{}, q db.Query, args ...interface{}) error {
-	logQuery(ctx, q, args...)
-
 	rows, err := p.QueryContext(ctx, q, args...)
 	if err != nil {
 		return err
@@ -96,6 +94,7 @@ func (p *pg) Close() {
 	p.connection.Close()
 }
 
+// MakeContextTx adds a database transaction to the context for later retrieval.
 func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
 	return context.WithValue(ctx, TxKey, tx)
 }

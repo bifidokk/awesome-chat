@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+
 	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
 	"github.com/bifidokk/awesome-chat/auth/internal/client/db/pg"
 	"github.com/jackc/pgx/v4"
@@ -12,6 +13,7 @@ type manager struct {
 	db db.Transactor
 }
 
+// NewTransactionManager creates a new db.TxManager instance with the provided transactor.
 func NewTransactionManager(db db.Transactor) db.TxManager {
 	return &manager{
 		db: db,

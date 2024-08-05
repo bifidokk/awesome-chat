@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+
 	"github.com/bifidokk/awesome-chat/auth/internal/client/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
@@ -11,6 +12,7 @@ type pgClient struct {
 	dbConnection db.DB
 }
 
+// New establishes a new database connection and returns a db.Client.
 func New(ctx context.Context, dsn string) (db.Client, error) {
 	connection, err := pgxpool.Connect(ctx, dsn)
 	if err != nil {
@@ -18,7 +20,7 @@ func New(ctx context.Context, dsn string) (db.Client, error) {
 	}
 
 	return &pgClient{
-		dbConnection: &pg{connection: connection},
+		dbConnection: NewDB(connection),
 	}, nil
 }
 
