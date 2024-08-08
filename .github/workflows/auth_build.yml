@@ -19,6 +19,7 @@ jobs:
         run: go mod download
       - name: Build
         working-directory: ./auth
-        run: go build ./cmd/
+        run: go build ./cmd/main.go
       - name: Run tests
+        working-directory: ./auth
         run: go test ./...
