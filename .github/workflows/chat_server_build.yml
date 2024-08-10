@@ -20,3 +20,6 @@ jobs:
       - name: Build
         working-directory: ./chat-server
         run: go build ./cmd/main.go
+      - name: Run tests
+        working-directory: ./chat-server
+        run: go test ./...
