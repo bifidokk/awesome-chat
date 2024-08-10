@@ -66,7 +66,7 @@ func TestGet(t *testing.T) {
 		args            args
 		want            *desc.GetResponse
 		err             error
-		noteServiceMock userServiceMockFunc
+		userServiceMock userServiceMockFunc
 	}{
 		{
 			name: "success case",
@@ -76,7 +76,7 @@ func TestGet(t *testing.T) {
 			},
 			want: response,
 			err:  nil,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(getUser, nil)
 				return mock
@@ -90,7 +90,7 @@ func TestGet(t *testing.T) {
 			},
 			want: nil,
 			err:  serviceError,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.GetMock.Expect(ctx, id).Return(nil, serviceError)
 				return mock
@@ -103,8 +103,8 @@ func TestGet(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			noteServiceMock := tt.noteServiceMock(mc)
-			api := user.NewUserAPI(noteServiceMock)
+			userServiceMock := tt.userServiceMock(mc)
+			api := user.NewUserAPI(userServiceMock)
 
 			result, err := api.Get(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

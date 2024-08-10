@@ -44,7 +44,7 @@ func TestDelete(t *testing.T) {
 		args            args
 		want            *emptypb.Empty
 		err             error
-		noteServiceMock userServiceMockFunc
+		userServiceMock userServiceMockFunc
 	}{
 		{
 			name: "success case",
@@ -54,7 +54,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: response,
 			err:  nil,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.DeleteMock.Expect(ctx, id).Return(nil)
 				return mock
@@ -68,7 +68,7 @@ func TestDelete(t *testing.T) {
 			},
 			want: response,
 			err:  serviceError,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.DeleteMock.Expect(ctx, id).Return(serviceError)
 				return mock
@@ -81,8 +81,8 @@ func TestDelete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			noteServiceMock := tt.noteServiceMock(mc)
-			api := user.NewUserAPI(noteServiceMock)
+			userServiceMock := tt.userServiceMock(mc)
+			api := user.NewUserAPI(userServiceMock)
 
 			result, err := api.Delete(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

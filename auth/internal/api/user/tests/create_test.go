@@ -61,7 +61,7 @@ func TestCreate(t *testing.T) {
 		args            args
 		want            *desc.CreateResponse
 		err             error
-		noteServiceMock userServiceMockFunc
+		userServiceMock userServiceMockFunc
 	}{
 		{
 			name: "success case",
@@ -71,7 +71,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: response,
 			err:  nil,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.CreateMock.Expect(ctx, createUser).Return(id, nil)
 				return mock
@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 			},
 			want: nil,
 			err:  serviceError,
-			noteServiceMock: func(mc *minimock.Controller) service.UserService {
+			userServiceMock: func(mc *minimock.Controller) service.UserService {
 				mock := serviceMocks.NewUserServiceMock(mc)
 				mock.CreateMock.Expect(ctx, createUser).Return(0, serviceError)
 				return mock
@@ -98,7 +98,7 @@ func TestCreate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			noteServiceMock := tt.noteServiceMock(mc)
+			noteServiceMock := tt.userServiceMock(mc)
 			api := user.NewUserAPI(noteServiceMock)
 
 			result, err := api.Create(tt.args.ctx, tt.args.req)
