@@ -28,3 +28,4 @@ jobs:
         with:
           working-directory: ./chat-server
           version: v1.59
+          args: --config=./.golangci.pipeline.yaml
