@@ -26,4 +26,5 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
+          working-directory: ./auth
           version: v1.59
