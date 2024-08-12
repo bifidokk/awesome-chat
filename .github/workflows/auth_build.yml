@@ -28,3 +28,4 @@ jobs:
         with:
           working-directory: ./auth
           version: v1.59
+          args: --config=./auth/.golangci.pipeline.yml
