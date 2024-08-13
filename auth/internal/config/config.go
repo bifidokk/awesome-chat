@@ -9,3 +9,8 @@ type GRPCConfig interface {
 type PGConfig interface {
 	DSN() string
 }
+
+// HTTPConfig is an interface for HTTP configuration
+type HTTPConfig interface {
+	Address() string
+}

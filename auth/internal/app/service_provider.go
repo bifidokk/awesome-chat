@@ -20,6 +20,7 @@ import (
 type serviceProvider struct {
 	pgConfig   config.PGConfig
 	grpcConfig config.GRPCConfig
+	httpConfig config.HTTPConfig
 
 	dbClient  db.Client
 	txManager db.TxManager
@@ -61,6 +62,20 @@ func (sp *serviceProvider) GrpcConfig() config.GRPCConfig {
 	}
 
 	return sp.grpcConfig
+}
+
+func (sp *serviceProvider) HTTPConfig() config.HTTPConfig {
+	if sp.httpConfig == nil {
+		httpConfig, err := config.NewHTTPConfig()
+
+		if err != nil {
+			log.Fatalf("failed to get http config: %v", err)
+		}
+
+		sp.httpConfig = httpConfig
+	}
+
+	return sp.httpConfig
 }
 
 func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {

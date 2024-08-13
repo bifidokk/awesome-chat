@@ -1,3 +1,4 @@
 /chat-server/bin/
 /.idea/
 /auth/bin/
+/auth/vendor.protogen/
