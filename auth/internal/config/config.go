@@ -14,3 +14,8 @@ type PGConfig interface {
 type HTTPConfig interface {
 	Address() string
 }
+
+// SwaggerConfig is an interface for HTTP configuration
+type SwaggerConfig interface {
+	Address() string
+}
