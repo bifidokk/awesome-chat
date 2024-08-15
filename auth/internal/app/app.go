@@ -10,6 +10,7 @@ import (
 
 	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
+	"github.com/bifidokk/awesome-chat/auth/internal/interceptor"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -104,7 +105,10 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	a.grpcServer = grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
+	)
 
 	reflection.Register(a.grpcServer)
 

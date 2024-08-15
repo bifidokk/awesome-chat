@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 option go_package = "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1;auth_v1";
 
@@ -37,10 +38,10 @@ service AuthV1 {
 }
 
 message CreateRequest {
-  string name = 1;
-  string email = 2;
-  string password = 3;
-  string password_confirm = 4;
+  string name = 1 [(validate.rules).string.min_len = 5];
+  string email = 2 [(validate.rules).string.email = true];
+  string password = 3 [(validate.rules).string.min_len = 5];
+  string password_confirm = 4 [(validate.rules).string.min_len = 5];
   Role role = 5;
 }
 
@@ -63,13 +64,13 @@ message GetResponse {
   string email = 3;
   Role role = 4;
   google.protobuf.Timestamp created_at = 5;
-  google.protobuf.Timestamp updated_at = 6;
+  google.protobuf.Timestamp updated_at = 6 ;
 }
 
 message UpdateRequest {
   int64 id = 1;
-  google.protobuf.StringValue name = 2;
-  google.protobuf.StringValue email = 3;
+  google.protobuf.StringValue name = 2 [(validate.rules).string.min_len = 5];
+  google.protobuf.StringValue email = 3 [(validate.rules).string.email = true];
 }
 
 message DeleteRequest {
