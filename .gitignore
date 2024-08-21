@@ -2,3 +2,4 @@
 /.idea/
 /auth/bin/
 /auth/vendor.protogen/
+/auth/logs

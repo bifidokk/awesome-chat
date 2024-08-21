@@ -2,15 +2,16 @@ package user
 
 import (
 	"context"
-	"log"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/converter"
+	"github.com/bifidokk/awesome-chat/auth/internal/logger"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
+	"go.uber.org/zap"
 )
 
 // Create handles the gRPC request to create a user.
 func (api *API) Create(ctx context.Context, req *desc.CreateRequest) (*desc.CreateResponse, error) {
-	log.Printf("Create a new user: %v", req)
+	logger.Info("Create a new user", zap.Any("request", req))
 
 	userID, err := api.userService.Create(ctx, converter.ToCreateUserFromCreateRequest(req))
 	if err != nil {
