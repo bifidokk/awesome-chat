@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/api/user"
 	userApi "github.com/bifidokk/awesome-chat/auth/internal/api/user"
@@ -15,6 +16,10 @@ import (
 	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
 	"github.com/bifidokk/awesome-chat/auth/internal/service"
 	userService "github.com/bifidokk/awesome-chat/auth/internal/service/user"
+
+	"github.com/natefinch/lumberjack"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type serviceProvider struct {
@@ -31,6 +36,8 @@ type serviceProvider struct {
 	userService service.UserService
 
 	userAPI *user.API
+
+	logger *zap.Logger
 }
 
 func newServiceProvider() *serviceProvider {
@@ -143,8 +150,47 @@ func (sp *serviceProvider) UserService(ctx context.Context) service.UserService 
 
 func (sp *serviceProvider) UserAPI(ctx context.Context) *user.API {
 	if sp.userAPI == nil {
-		sp.userAPI = userApi.NewUserAPI(sp.UserService(ctx))
+		sp.userAPI = userApi.NewUserAPI(sp.UserService(ctx), sp.Logger())
 	}
 
 	return sp.userAPI
+}
+
+func (sp *serviceProvider) Logger() *zap.Logger {
+	if sp.logger == nil {
+		var level zapcore.Level
+
+		if err := level.Set("info"); err != nil {
+			log.Fatalf("failed to set log level: %v", err)
+		}
+
+		atomicLevel := zap.NewAtomicLevelAt(level)
+
+		stdout := zapcore.AddSync(os.Stdout)
+		file := zapcore.AddSync(&lumberjack.Logger{
+			Filename:   "logs/app.log",
+			MaxSize:    10, // megabytes
+			MaxBackups: 3,
+			MaxAge:     7, // days
+		})
+
+		productionCfg := zap.NewProductionEncoderConfig()
+		productionCfg.TimeKey = "timestamp"
+		productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+
+		developmentCfg := zap.NewDevelopmentEncoderConfig()
+		developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+		consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
+		fileEncoder := zapcore.NewJSONEncoder(productionCfg)
+
+		core := zapcore.NewTee(
+			zapcore.NewCore(consoleEncoder, stdout, atomicLevel),
+			zapcore.NewCore(fileEncoder, file, atomicLevel),
+		)
+
+		sp.logger = zap.New(core)
+	}
+
+	return sp.logger
 }

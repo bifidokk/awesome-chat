@@ -10,9 +10,12 @@ import (
 	"github.com/bifidokk/awesome-chat/auth/internal/service"
 	serviceMocks "github.com/bifidokk/awesome-chat/auth/internal/service/mocks"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -27,8 +30,9 @@ func TestUpdate(t *testing.T) {
 	}
 
 	var (
-		ctx = context.Background()
-		mc  = minimock.NewController(t)
+		ctx        = context.Background()
+		mc         = minimock.NewController(t)
+		loggerMock = zaptest.NewLogger(t)
 
 		id    = gofakeit.Int64()
 		email = gofakeit.Email()
@@ -61,6 +65,7 @@ func TestUpdate(t *testing.T) {
 		want            *emptypb.Empty
 		err             error
 		userServiceMock userServiceMockFunc
+		loggerMock      *zap.Logger
 	}{
 		{
 			name: "success case",
@@ -75,6 +80,7 @@ func TestUpdate(t *testing.T) {
 				mock.UpdateMock.Expect(ctx, updateUser).Return(nil)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 		{
 			name: "service error case",
@@ -89,6 +95,7 @@ func TestUpdate(t *testing.T) {
 				mock.UpdateMock.Expect(ctx, updateUser).Return(serviceError)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 	}
 
@@ -97,7 +104,7 @@ func TestUpdate(t *testing.T) {
 			t.Parallel()
 
 			userServiceMock := tt.userServiceMock(mc)
-			api := user.NewUserAPI(userServiceMock)
+			api := user.NewUserAPI(userServiceMock, loggerMock)
 
 			result, err := api.Update(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

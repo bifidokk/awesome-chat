@@ -10,9 +10,12 @@ import (
 	"github.com/bifidokk/awesome-chat/auth/internal/service"
 	serviceMocks "github.com/bifidokk/awesome-chat/auth/internal/service/mocks"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestCreate(t *testing.T) {
@@ -25,8 +28,9 @@ func TestCreate(t *testing.T) {
 	}
 
 	var (
-		ctx = context.Background()
-		mc  = minimock.NewController(t)
+		ctx        = context.Background()
+		mc         = minimock.NewController(t)
+		loggerMock = zaptest.NewLogger(t)
 
 		id       = gofakeit.Int64()
 		password = gofakeit.Password(true, true, true, true, true, 10)
@@ -62,6 +66,7 @@ func TestCreate(t *testing.T) {
 		want            *desc.CreateResponse
 		err             error
 		userServiceMock userServiceMockFunc
+		loggerMock      *zap.Logger
 	}{
 		{
 			name: "success case",
@@ -76,6 +81,7 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, createUser).Return(id, nil)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 		{
 			name: "service error case",
@@ -90,6 +96,7 @@ func TestCreate(t *testing.T) {
 				mock.CreateMock.Expect(ctx, createUser).Return(0, serviceError)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 	}
 
@@ -98,7 +105,7 @@ func TestCreate(t *testing.T) {
 			t.Parallel()
 
 			userServiceMock := tt.userServiceMock(mc)
-			api := user.NewUserAPI(userServiceMock)
+			api := user.NewUserAPI(userServiceMock, tt.loggerMock)
 
 			result, err := api.Create(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)

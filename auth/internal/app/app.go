@@ -6,16 +6,12 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/natefinch/lumberjack"
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/cors"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -23,7 +19,6 @@ import (
 	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
 	"github.com/bifidokk/awesome-chat/auth/internal/interceptor"
-	"github.com/bifidokk/awesome-chat/auth/internal/logger"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
 	_ "github.com/bifidokk/awesome-chat/auth/statik" // need for swagger
 )
@@ -95,7 +90,6 @@ func (a *App) initDependencies(ctx context.Context) error {
 
 	inits := []func(context context.Context) error{
 		a.initConfig,
-		a.initLogger,
 		a.initServiceProvider,
 		a.initGRPCServer,
 		a.initHTTPServer,
@@ -116,43 +110,6 @@ func (a *App) initConfig(_ context.Context) error {
 	if err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (a *App) initLogger(_ context.Context) error {
-	var level zapcore.Level
-
-	if err := level.Set("info"); err != nil {
-		log.Fatalf("failed to set log level: %v", err)
-	}
-
-	atomicLevel := zap.NewAtomicLevelAt(level)
-
-	stdout := zapcore.AddSync(os.Stdout)
-	file := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "logs/app.log",
-		MaxSize:    10, // megabytes
-		MaxBackups: 3,
-		MaxAge:     7, // days
-	})
-
-	productionCfg := zap.NewProductionEncoderConfig()
-	productionCfg.TimeKey = "timestamp"
-	productionCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-
-	developmentCfg := zap.NewDevelopmentEncoderConfig()
-	developmentCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
-
-	consoleEncoder := zapcore.NewConsoleEncoder(developmentCfg)
-	fileEncoder := zapcore.NewJSONEncoder(productionCfg)
-
-	core := zapcore.NewTee(
-		zapcore.NewCore(consoleEncoder, stdout, atomicLevel),
-		zapcore.NewCore(fileEncoder, file, atomicLevel),
-	)
-
-	logger.Init(core)
 
 	return nil
 }

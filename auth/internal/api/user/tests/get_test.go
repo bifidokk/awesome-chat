@@ -10,9 +10,12 @@ import (
 	"github.com/bifidokk/awesome-chat/auth/internal/service"
 	serviceMocks "github.com/bifidokk/awesome-chat/auth/internal/service/mocks"
 	desc "github.com/bifidokk/awesome-chat/auth/pkg/auth_v1"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -26,8 +29,9 @@ func TestGet(t *testing.T) {
 	}
 
 	var (
-		ctx = context.Background()
-		mc  = minimock.NewController(t)
+		ctx        = context.Background()
+		mc         = minimock.NewController(t)
+		loggerMock = zaptest.NewLogger(t)
 
 		id    = gofakeit.Int64()
 		email = gofakeit.Email()
@@ -67,6 +71,7 @@ func TestGet(t *testing.T) {
 		want            *desc.GetResponse
 		err             error
 		userServiceMock userServiceMockFunc
+		loggerMock      *zap.Logger
 	}{
 		{
 			name: "success case",
@@ -81,6 +86,7 @@ func TestGet(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(getUser, nil)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 		{
 			name: "service error case",
@@ -95,6 +101,7 @@ func TestGet(t *testing.T) {
 				mock.GetMock.Expect(ctx, id).Return(nil, serviceError)
 				return mock
 			},
+			loggerMock: loggerMock,
 		},
 	}
 
@@ -103,7 +110,7 @@ func TestGet(t *testing.T) {
 			t.Parallel()
 
 			userServiceMock := tt.userServiceMock(mc)
-			api := user.NewUserAPI(userServiceMock)
+			api := user.NewUserAPI(userServiceMock, tt.loggerMock)
 
 			result, err := api.Get(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
