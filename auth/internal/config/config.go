@@ -19,3 +19,8 @@ type HTTPConfig interface {
 type SwaggerConfig interface {
 	Address() string
 }
+
+// PrometheusConfig is an interface for Prometheus configuration
+type PrometheusConfig interface {
+	Address() string
+}
