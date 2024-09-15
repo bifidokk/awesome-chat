@@ -140,6 +140,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			interceptor.NewCircuitBreakerInterceptor(a.serviceProvider.CircuitBreaker()).Unary,
 			interceptor.MetricsInterceptor,
 			interceptor.ValidateInterceptor,
+			interceptor.ErrorCodesInterceptor,
 		),
 	)
 
