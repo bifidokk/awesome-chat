@@ -137,6 +137,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 		grpc.Creds(insecure.NewCredentials()),
 		grpc.ChainUnaryInterceptor(
 			interceptor.NewRateLimiterInterceptor(a.serviceProvider.RateLimiter(ctx)).Allow,
+			interceptor.NewCircuitBreakerInterceptor(a.serviceProvider.CircuitBreaker()).Unary,
 			interceptor.MetricsInterceptor,
 			interceptor.ValidateInterceptor,
 		),

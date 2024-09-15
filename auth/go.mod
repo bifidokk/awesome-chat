@@ -17,6 +17,7 @@ require (
 	github.com/prometheus/client_golang v1.20.3
 	github.com/rakyll/statik v0.1.7
 	github.com/rs/cors v1.11.0
+	github.com/sony/gobreaker v1.0.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.13.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240723171418-e6d459c13d2a
