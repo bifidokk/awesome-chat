@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/bifidokk/awesome-chat/auth/internal/api/user"
 	userApi "github.com/bifidokk/awesome-chat/auth/internal/api/user"
@@ -12,6 +13,8 @@ import (
 	"github.com/bifidokk/awesome-chat/auth/internal/client/db/transaction"
 	"github.com/bifidokk/awesome-chat/auth/internal/closer"
 	"github.com/bifidokk/awesome-chat/auth/internal/config"
+	"github.com/bifidokk/awesome-chat/auth/internal/rate_limiter"
+	rateLimiter "github.com/bifidokk/awesome-chat/auth/internal/rate_limiter"
 	"github.com/bifidokk/awesome-chat/auth/internal/repository"
 	userRepository "github.com/bifidokk/awesome-chat/auth/internal/repository/user"
 	"github.com/bifidokk/awesome-chat/auth/internal/service"
@@ -39,6 +42,8 @@ type serviceProvider struct {
 	userAPI *user.API
 
 	logger *zap.Logger
+
+	rateLimiter *rate_limiter.TokenBucketLimiter
 }
 
 func newServiceProvider() *serviceProvider {
@@ -208,4 +213,12 @@ func (sp *serviceProvider) Logger() *zap.Logger {
 	}
 
 	return sp.logger
+}
+
+func (sp *serviceProvider) RateLimiter(ctx context.Context) *rate_limiter.TokenBucketLimiter {
+	if sp.rateLimiter == nil {
+		sp.rateLimiter = rateLimiter.NewTokenBucketLimiter(ctx, 1, time.Second)
+	}
+
+	return sp.rateLimiter
 }
